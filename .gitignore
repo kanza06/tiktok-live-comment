@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+venv*/
+venv312/
+
+# PyInstaller
+build/
+dist/TikTokLiveReader/
+*.spec.bak
+
+# Cache gambar lokal
+image_cache/
+
+# Log & file sementara
+*.log
+out.log
+
+# Pengaturan pribadi (opsional: hapus baris ini jika ingin ikut repo)
+# settings.json
+dist/

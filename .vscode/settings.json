@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\Kahfi\\AppData\\Local\\Python\\pythoncore-3.15-64\\python.exe",
+    "python.analysis.extraPaths": [
+        "C:\\Users\\Kahfi\\AppData\\Local\\Python\\pythoncore-3.15-64\\Lib\\site-packages"
+    ]
+}
