@@ -4,5 +4,5 @@
   "font_size": 13,
   "font_family": "Malgun Gothic",
   "theme": "dark",
-  "speed_unit": "MBps"
+  "speed_unit": "mbps"
 }

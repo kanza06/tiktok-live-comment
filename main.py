@@ -811,6 +811,14 @@ class MainWindow(QWidget):
         self.footer = QLabel("")
         self.footer.setObjectName("muted")
         foot.addWidget(self.footer, 1)
+        # ajakan follow di samping status koneksi (bisa diklik -> buka profil)
+        follow = QLabel('<a href="https://www.tiktok.com/@ombaharbangkit350jt" '
+                        'style="color:#FE2C55;text-decoration:none;">'
+                        'Follow @ombaharbangkit350jt</a>')
+        follow.setTextFormat(Qt.TextFormat.RichText)
+        follow.setOpenExternalLinks(True)
+        follow.setCursor(Qt.CursorShape.PointingHandCursor)
+        foot.addWidget(follow)
         foot.addWidget(QSizeGrip(self), 0, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight)
         body.addLayout(foot)
         root.addLayout(body, 1)
@@ -1132,17 +1140,103 @@ class MainWindow(QWidget):
         super().closeEvent(e)
 
 
+def _res(name):
+    """Cari file sumber daya (bekerja juga saat dibundle PyInstaller onefile)."""
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
+    p = base / name
+    if not p.exists():
+        p = Path.cwd() / name
+    return p
+
+
+class SplashWindow(QWidget):
+    """Layar loading sebelum masuk dashboard (logo + teks + progress bar)."""
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("TikTok Live Reader")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setFixedSize(360, 460)
+        self._pct = 0
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(20, 20, 20, 24)
+        lay.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        logo = QLabel()
+        img = _res("@ombaharbangkit350jt.jpg")
+        if img.exists():
+            logo.setPixmap(QPixmap(str(img)).scaled(220, 220,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation))
+        logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lay.addWidget(logo)
+
+        t1 = QLabel("<b>TikTok Live Reader</b>")
+        t1.setTextFormat(Qt.TextFormat.RichText)
+        t1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        t1.setStyleSheet("font-size:20px; color:#FFFFFF;")
+        lay.addWidget(t1)
+
+        t2 = QLabel("Memuat aplikasi...")
+        t2.setObjectName("splash_status")
+        t2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        t2.setStyleSheet("color:#8A8AA0; font-size:13px;")
+        lay.addWidget(t2)
+        self.status = t2
+
+        bar_wrap = QHBoxLayout()
+        self.bar = QSlider(Qt.Orientation.Horizontal)
+        self.bar.setRange(0, 100)
+        self.bar.setEnabled(False)
+        self.bar.setStyleSheet("""
+            QSlider::groove:horizontal { height:6px; background:#25252F; border-radius:3px; }
+            QSlider::sub-page:horizontal { background:#25F4EE; border-radius:3px; }
+            QSlider::handle:horizontal { width:0; }
+        """)
+        bar_wrap.addWidget(self.bar, 1)
+        lay.addLayout(bar_wrap)
+
+        t3 = QLabel('Jangan lupa follow akun TikTok <b style="color:#FE2C55;">@ombaharbangkit350jt</b>')
+        t3.setTextFormat(Qt.TextFormat.RichText)
+        t3.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        t3.setWordWrap(True)
+        t3.setStyleSheet("color:#C8C8D8; font-size:12px;")
+        lay.addWidget(t3)
+
+        self.setStyleSheet("background:#101018; border-radius:18px;")
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._tick)
+        self._timer.start(45)
+
+    def _tick(self):
+        self._pct = min(self._pct + 2, 100)
+        self.bar.setValue(self._pct)
+        self.status.setText(f"Memuat aplikasi... {self._pct}%")
+        if self._pct >= 100:
+            self._timer.stop()
+            self._open_main()
+
+    def _open_main(self):
+        global SPLASH_DONE
+        self.close()
+        w = MainWindow()
+        w.show()
+        GLOBAL_W["w"] = w
+
+
+GLOBAL_W = {}
+
+
 def main():
     app = QApplication(sys.argv)
     # icon aplikasi (taskbar & window) dari 1.png di samping script/exe
-    icon_path = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "1.png"
-    if not icon_path.exists():
-        icon_path = Path.cwd() / "1.png"
+    icon_path = _res("1.png")
     if icon_path.exists():
         from PySide6.QtGui import QIcon
         app.setWindowIcon(QIcon(str(icon_path)))
-    w = MainWindow()
-    w.show()
+    splash = SplashWindow()
+    splash.show()
     sys.exit(app.exec())
 
 

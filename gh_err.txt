@@ -1,0 +1,4 @@
+
+! One-time code (921A-6D6B) copied to clipboard
+Open this URL to continue in your web browser: https://github.com/login/device
+failed to authenticate via web browser: context deadline exceeded
